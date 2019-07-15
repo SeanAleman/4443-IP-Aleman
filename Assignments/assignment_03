@@ -1,1 +1,87 @@
-begin assignment 3
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="x-ua-compatible" content="ie=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Color Picker</title>
+    <!-- css styling -->
+    <style>
+        /* CSS grid layout
+        creates a container that has 3 columns and the text is aligned to center with the gaps shown */
+        .container {
+            display: grid;
+            grid-template-columns: 200px 200px 200px; 
+            grid-column-gap: 30px;
+            grid-row-gap: 30px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script>
+        $(function () {
+            $('body').append('<h1>4443 - Assignment 3</h1>');
+            $('body').append('<h3>Ordered Color Grid!</h3>');
+            // https://stackoverflow.com/questions/979256/sorting-an-array-of-javascript-objects-by-property/979325#979325
+            var sort_by = function (field, reverse, primer) {
+                var key = primer ?
+                    function (x) { return primer(x[field]) } :
+                    function (x) { return x[field] };
+                reverse = !reverse ? 1 : -1;
+                return function (a, b) {
+                    return a = key(a), b = key(b), reverse * ((a > b) - (b > a));
+                }
+            }
+            //function to orgainze the data that goes into the grid
+            function buildGrid(data){
+                //creates div with class container in the body.
+                $('body').append('<div class="container"></div>');
+            
+                //loops through the data
+                for(var i = 0; i< data.length; i++){
+
+                   // creates a new divison with class item
+                     var item = '<div class="item"';
+
+                    //creates variable so that text color changes based on background color.
+                    var coloroftext = getContrastYIQ(data[i]['html']);
+
+                    //grabbing color from json and putting it in item background
+                    item += 'style="background-color:'+data[i]['html']+'">'; 
+                    
+                   // uses the variable to change color.
+                   item += '<p class = "text" style = "color:' + coloroftext + '">';
+
+                    // putting the data in there along with strings.
+                    item +=  '<br>'+ '<br>'+'Name: ' + data[i]["name"]+ '<br>'+ '<br>' +'Html: ' + data[i]["html"] + '<br>'+ '<br>' +'RGB: ' + data[i]["rgb"]+ '<br>'+ '<br>'+'<br>';
+                 
+                    //creates the container with the item which contains all the data in ordered fashion
+                    $('.container').append(item);
+                }
+            }
+            /**
+            * determine color of text depend on the background color of each item
+            * snippet code from https://stackoverflow.com/questions/11867545/change-text-color-based-on-brightness-of-the-covered-background-area
+            * Input: Some string hex value: #AA00FF
+            * Returns: string [black,white]
+            */
+            function getContrastYIQ(hexcolor){
+                hexcolor = hexcolor.replace("#", "");
+                var r = parseInt(hexcolor.substr(0,2),16);
+                var g = parseInt(hexcolor.substr(2,2),16);
+                var b = parseInt(hexcolor.substr(4,2),16);
+                var yiq = ((r*299)+(g*587)+(b*114))/1000;
+                return (yiq >= 128) ? 'black' : 'white';
+            }
+            //gets the data from colors.json, sorting it, then building the grid with the data provided
+            $.get("http://206.189.187.57/colors.json")
+               .done(function (data) {
+                data.sort(sort_by('name', false));
+                    buildGrid(data);
+                });
+        });
+    </script>
+</body>
